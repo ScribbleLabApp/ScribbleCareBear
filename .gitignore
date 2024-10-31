@@ -40,3 +40,4 @@ coverage/
 # Optional build directory
 dist/
 build/
+config.json
