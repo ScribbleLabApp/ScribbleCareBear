@@ -30,18 +30,53 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const fs = require("fs");
-const { Client, Events, GatewayIntentBits, SlashCommandBuilder } = require("discord.js");
+const { Client, Events, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require("discord.js");
 const { secrets } = require("../config.json");
 
-const client = new Client({ intents: [] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const config = JSON.parse(fs.readFileSync(__dirname + "/../config.json", "utf8"));
 
-const applicationID = config.applicationID;
-const publicKey = config.publicKey;
+const applicationID = config.APPLICATION_ID;
+const publicKey = config.PUBLIC_KEY;
 const token = config.TOKEN;
 
-client.once(Events.ClientReady, c => {
-    new SlashCommandBuilder()
+client.once(Events.ClientReady, async c => {
+    const commands = [
+        new SlashCommandBuilder()
+            .setName("ping")
+            .setDescription(
+                "Displays the bot's latency and response time"
+            ),
+        new SlashCommandBuilder()
+            .setName("about")
+            .setDescription(
+                "Displays the bot's version, build number, developer information, and uptime"
+            )
+    ].map(command => command.toJSON());
+
+    const rest = new REST({ version: "10" }).setToken(token);
+
+    try {
+        await rest.put(
+            Routes.applicationCommands(applicationID),
+            { body: commands }
+        );
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+    if (interaction.commandName === "ping") {
+        const latency = Date.now() - interaction.createdTimestamp;
+        await interaction.reply({ content: `Pong! Latency: ${latency}ms. API Latency: ${client.ws.ping}ms` });
+    }
+    if (interaction.commandName === "about") {
+        await interaction.reply({
+            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms`
+        });
+    }
 });
 
 client.login(token);
