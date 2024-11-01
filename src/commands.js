@@ -41,6 +41,11 @@ const commands = [
         .setName("about")
         .setDescription(
             "Displays the bot's version, build number, developer information, and uptime"
+        ),
+    new SlashCommandBuilder()
+        .setName("resources")
+        .setDescription(
+            "Displays important links like our website, documentation, GitHub projects, and socials"
         )
 ].map(command => command.toJSON());
 

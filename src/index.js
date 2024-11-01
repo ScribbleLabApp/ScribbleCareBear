@@ -30,9 +30,7 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const fs  = require("fs");
-//const cmd = require("./commands.js")
-//const cmd = require("./commands")
-
+const { commands } = require("./commands");
 const { 
     Client, 
     Events, 
@@ -51,21 +49,7 @@ const token = config.TOKEN;
 
 const guildID = config.GUILD_ID;
 
-client.once(Events.ClientReady, async c => {
-
-    const commands = [
-        new SlashCommandBuilder()
-            .setName("ping")
-            .setDescription(
-                "Displays the bot's latency and response time"
-            ),
-        new SlashCommandBuilder()
-            .setName("about")
-            .setDescription(
-                "Displays the bot's version, build number, developer information, and uptime"
-            )
-    ].map(command => command.toJSON());
-
+client.once(Events.ClientReady, async () => {
     const rest = new REST({ version: "10" }).setToken(token);
 
     try {
@@ -73,20 +57,27 @@ client.once(Events.ClientReady, async c => {
             Routes.applicationCommands(applicationID, guildID),
             { body: commands }
         );
+        console.log("[SCB]: Commands registered successfully.");
     } catch (error) {
-        console.error(error);
+        console.error("[SCB]: Error registering commands:", error);
     }
 });
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
+
     if (interaction.commandName === "ping") {
         const latency = Date.now() - interaction.createdTimestamp;
         await interaction.reply({ content: `Pong! Latency: ${latency}ms. API Latency: ${client.ws.ping}ms` });
     }
     if (interaction.commandName === "about") {
         await interaction.reply({
-            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms`
+            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms\nLicense: BSD-3 Clause\nSource Code: https://github.com/ScribbleLabApp/ScribbleCareBear`
+        });
+    }
+    if (interaction.commandName === "resources") {
+        await interaction.reply({
+            content: `Hello World!`
         });
     }
 });
