@@ -29,24 +29,66 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder } = require("discord.js")
+const fs = require("fs");
+const path = require("node:path");
+const main = require("./index")
 
-const commands = [
-    new SlashCommandBuilder()
-        .setName("ping")
-        .setDescription(
-            "Displays the bot's latency and response time"
-        ),
-    new SlashCommandBuilder()
-        .setName("about")
-        .setDescription(
-            "Displays the bot's version, build number, developer information, and uptime"
-        ),
-    new SlashCommandBuilder()
-        .setName("resources")
-        .setDescription(
-            "Displays important links like our website, documentation, GitHub projects, and socials"
-        )
-].map(command => command.toJSON());
+const { log } = require("./utils/log")
+const { REST } = require("@discordjs/rest");
+const { Routes } = require("discord.js");
 
-module.exports = { commands };
+/**
+ * Loads and retrieves all command data from the specified directory.
+ *
+ * @param {string} dir - The directory path to search for command files.
+ * @returns {Array} An array of command data objects ready for registration.
+ */
+function loadCommands(dir) {
+    function getFiles(directory) {
+        const files = fs.readdirSync(directory, { withFileTypes: true });
+        let commandFiles = [];
+
+        for (const file of files) {
+            if (file.isDirectory()) {
+                commandFiles.push(...getFiles(path.join(directory, file.name)));
+            } else if (file.name.endsWith(".js")) {
+                commandFiles.push(path.join(directory, file.name));
+            }
+        }
+
+        return commandFiles;
+    }
+
+    const commandFiles = getFiles(dir);
+    return commandFiles.map(file => require(file).data.toJSON());
+}
+
+const commandsDir = path.join(__dirname, "commands");
+const commands = loadCommands(commandsDir);
+
+/**
+ * Registers commands with the Discord API.
+ *
+ * @param {string} token - The bot's token.
+ * @param {string} applicationID - The application's ID.
+ * @param {string} guildID - The guild ID where the commands will be registered.
+ */
+function registerCommands(token, applicationID, guildID) {
+    const commandsDir = path.join(__dirname, "commands");
+    const commands = loadCommands(commandsDir);
+
+    const rest = new REST({ version: "10" }).setToken(token);
+
+    rest.put(
+        Routes.applicationGuildCommands(applicationID, guildID),
+        { body: commands }
+    )
+        .then(() => {
+            log("[SCB]: Successfully registered application commands!");
+        })
+        .catch(error => {
+            log(`[SCB]: Error registering commands: ${error}`);
+        });
+}
+
+module.exports = { loadCommands, registerCommands };

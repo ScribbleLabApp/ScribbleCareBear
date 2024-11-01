@@ -30,7 +30,8 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const fs  = require("fs");
-const { commands } = require("./commands");
+const { registerCommands } = require("./commands");
+const { log } = require("./utils/log");
 const { 
     Client, 
     Events, 
@@ -49,18 +50,9 @@ const token = config.TOKEN;
 
 const guildID = config.GUILD_ID;
 
-client.once(Events.ClientReady, async () => {
-    const rest = new REST({ version: "10" }).setToken(token);
-
-    try {
-        await rest.put(
-            Routes.applicationCommands(applicationID, guildID),
-            { body: commands }
-        );
-        console.log("[SCB]: Commands registered successfully.");
-    } catch (error) {
-        console.error("[SCB]: Error registering commands:", error);
-    }
+client.once(Events.ClientReady, async (c) => {
+    log(`Logged in as ${c.user.tag}`);
+    registerCommands(token, applicationID, guildID);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -79,6 +71,10 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.reply({
             content: `Hello World!`
         });
+    }
+    if (interaction.commandName === "say") {
+        const message = interaction.options.getString("message");
+        await interaction.reply({ content: message });
     }
 });
 
