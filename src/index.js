@@ -72,7 +72,7 @@ client.on(Events.InteractionCreate, async interaction => {
     }
     if (interaction.commandName === "about") {
         await interaction.reply({
-            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms\nLicense: BSD-3 Clause\nSource Code: https://github.com/ScribbleLabApp/ScribbleCareBear`
+            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms\nLicense: BSD-3 Clause\nSource Code: https://github.com/ScribbleLabApp/ScribbleCareBear\nCopyright (c) 2024 ScribbleLabApp - All rights reserved.`
         });
     }
     if (interaction.commandName === "resources") {
