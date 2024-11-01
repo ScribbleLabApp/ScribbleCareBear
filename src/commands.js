@@ -60,11 +60,29 @@ function loadCommands(dir) {
     }
 
     const commandFiles = getFiles(dir);
-    return commandFiles.map(file => require(file).data.toJSON());
+    //const commands = commandFiles.map(file => require(file).data.toJSON());
+    const commands = commandFiles.map(file => {
+        const command = require(file);
+
+        if (typeof command.execute !== "function") {
+            log(`The command at ${file} does not have an execute function.`);
+            throw new Error(`The command at ${file} does not have an execute function.`);
+        }
+        return {
+            name: command.data.name,
+            description: command.data.description,
+            execute: command.execute,
+            data: command.data.toJSON()
+        };
+    });
+
+    log(`[SCB]: Loaded commands: ${JSON.stringify(commands)}`);
+
+    return commands;
 }
 
-const commandsDir = path.join(__dirname, "commands");
-const commands = loadCommands(commandsDir);
+//const commandsDir = path.join(__dirname, "commands");
+//const commands = loadCommands(commandsDir);
 
 /**
  * Registers commands with the Discord API.
@@ -73,22 +91,23 @@ const commands = loadCommands(commandsDir);
  * @param {string} applicationID - The application's ID.
  * @param {string} guildID - The guild ID where the commands will be registered.
  */
-function registerCommands(token, applicationID, guildID) {
+async function registerCommands(token, applicationID, guildID) {
     const commandsDir = path.join(__dirname, "commands");
     const commands = loadCommands(commandsDir);
 
     const rest = new REST({ version: "10" }).setToken(token);
 
-    rest.put(
-        Routes.applicationGuildCommands(applicationID, guildID),
-        { body: commands }
-    )
-        .then(() => {
-            log("[SCB]: Successfully registered application commands!");
-        })
-        .catch(error => {
-            log(`[SCB]: Error registering commands: ${error}`);
-        });
+    try {
+        await rest.put(
+            Routes.applicationGuildCommands(applicationID, guildID),
+            { body: commands }
+        );
+        log("[SCB]: Successfully registered application commands!");
+        return commands;
+    } catch (e) {
+        log(`[SCB]: Error registering commands: ${e}`);
+        throw e;
+    }
 }
 
 module.exports = { loadCommands, registerCommands };

@@ -47,34 +47,43 @@ const config = JSON.parse(fs.readFileSync(__dirname + "/../config.json", "utf8")
 const applicationID = config.APPLICATION_ID;
 const publicKey = config.PUBLIC_KEY;
 const token = config.TOKEN;
-
 const guildID = config.GUILD_ID;
+
+client.commands = new Map();
 
 client.once(Events.ClientReady, async (c) => {
     log(`Logged in as ${c.user.tag}`);
-    registerCommands(token, applicationID, guildID);
+
+    try {
+        const commands = await registerCommands(token, applicationID, guildID);
+        commands.forEach(command => {
+            // Ensure command names are unique
+            if (!client.commands.has(command.name)) {
+                client.commands.set(command.name, command);
+            } else {
+                log(`[SCB]: Duplicate command found: ${command.name}`);
+            }
+        });
+        log(`[SCB]: Registered commands: ${Array.from(client.commands.keys()).join(", ")}`);
+    } catch (error) {
+        log(`[SCB]: Failed to register commands: ${error}`);
+    }
 });
 
-client.on(Events.InteractionCreate, async interaction => {
+client.on(Events.InteractionCreate, (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName === "ping") {
-        const latency = Date.now() - interaction.createdTimestamp;
-        await interaction.reply({ content: `Pong! Latency: ${latency}ms. API Latency: ${client.ws.ping}ms` });
+    const command = client.commands.get(interaction.commandName);
+    if (!command) {
+        log(`[SCB]: Command not found: ${interaction.commandName}`);
+        return;
     }
-    if (interaction.commandName === "about") {
-        await interaction.reply({
-            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms\nLicense: BSD-3 Clause\nSource Code: https://github.com/ScribbleLabApp/ScribbleCareBear\nCopyright (c) 2024 ScribbleLabApp - All rights reserved.`
-        });
-    }
-    if (interaction.commandName === "resources") {
-        await interaction.reply({
-            content: `Hello World!`
-        });
-    }
-    if (interaction.commandName === "say") {
-        const message = interaction.options.getString("message");
-        await interaction.reply({ content: message });
+
+    try {
+        log(`[SCB]: Executing command: ${command.name}`);
+        command.execute(interaction);
+    } catch (e) {
+        log(`[SCB]: Interaction execution failed: ${e}`);
     }
 });
 

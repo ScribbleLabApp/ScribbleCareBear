@@ -29,7 +29,7 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder } = require("discord.js")
+const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -38,5 +38,9 @@ module.exports = {
         "Displays important links like our website, documentation, GitHub projects, and socials"
     ),
 
-    async execute(interaction) {}
+    async execute(interaction) {
+        await interaction.reply({
+            content: `Hello World!`
+        });
+    }
 }

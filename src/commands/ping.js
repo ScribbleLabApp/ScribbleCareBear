@@ -29,7 +29,8 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder } = require("discord.js")
+const { SlashCommandBuilder } = require("discord.js");
+const main = require("../index");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -38,5 +39,8 @@ module.exports = {
         "Displays the bot's latency and response time"
     ),
 
-    async execute(interaction) {}
+    async execute(interaction) {
+        const latency = Date.now() - interaction.createdTimestamp;
+        await interaction.reply({ content: `Pong! Latency: ${latency}ms. API Latency: ${main.client.ws.ping}ms` });
+    }
 }
