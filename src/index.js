@@ -29,9 +29,18 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const fs = require("fs");
-const { Client, Events, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require("discord.js");
-const { secrets } = require("../config.json");
+const fs  = require("fs");
+//const cmd = require("./commands.js")
+//const cmd = require("./commands")
+
+const { 
+    Client, 
+    Events, 
+    GatewayIntentBits, 
+    SlashCommandBuilder, 
+    REST, 
+    Routes 
+} = require("discord.js");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const config = JSON.parse(fs.readFileSync(__dirname + "/../config.json", "utf8"));
@@ -40,7 +49,10 @@ const applicationID = config.APPLICATION_ID;
 const publicKey = config.PUBLIC_KEY;
 const token = config.TOKEN;
 
+const guildID = config.GUILD_ID;
+
 client.once(Events.ClientReady, async c => {
+
     const commands = [
         new SlashCommandBuilder()
             .setName("ping")
@@ -58,7 +70,7 @@ client.once(Events.ClientReady, async c => {
 
     try {
         await rest.put(
-            Routes.applicationCommands(applicationID),
+            Routes.applicationCommands(applicationID, guildID),
             { body: commands }
         );
     } catch (error) {
