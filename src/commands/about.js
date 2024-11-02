@@ -29,14 +29,18 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder } = require("discord.js")
+const { SlashCommandBuilder } = require("discord.js");
+const { client, config } = require("../index");
 
 module.exports = {
     data: new SlashCommandBuilder()
-    .setName("about")
-    .setDescription(
-        "Displays the bot's version, build number, developer information, and uptime"
-    ),
-
-    async execute(interaction) {}
+        .setName("about")
+        .setDescription(
+            "Displays the bot's version, build number, developer information, and uptime"
+        ),
+    async execute(interaction) {
+        await interaction.reply({
+            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms\nLicense: BSD-3 Clause\nSource Code: https://github.com/ScribbleLabApp/ScribbleCareBear\nCopyright (c) 2024 ScribbleLabApp - All rights reserved.`
+        });
+    }
 }
