@@ -53,38 +53,36 @@ client.commands = new Map();
 
 client.once(Events.ClientReady, async (c) => {
     log(`Logged in as ${c.user.tag}`);
-
+    
     try {
         const commands = await registerCommands(token, applicationID, guildID);
-        commands.forEach(command => {
-            // Ensure command names are unique
-            if (!client.commands.has(command.name)) {
-                client.commands.set(command.name, command);
-            } else {
-                log(`[SCB]: Duplicate command found: ${command.name}`);
-            }
-        });
+        client.commands.clear();
+        commands.forEach(cmd => client.commands.set(cmd.name, cmd));
         log(`[SCB]: Registered commands: ${Array.from(client.commands.keys()).join(", ")}`);
     } catch (error) {
         log(`[SCB]: Failed to register commands: ${error}`);
     }
 });
 
-client.on(Events.InteractionCreate, (interaction) => {
+client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
     if (!command) {
         log(`[SCB]: Command not found: ${interaction.commandName}`);
+        await interaction.reply({ content: "Command not found.", ephemeral: true });
         return;
     }
 
     try {
         log(`[SCB]: Executing command: ${command.name}`);
-        command.execute(interaction);
+        await command.execute(interaction);
     } catch (e) {
         log(`[SCB]: Interaction execution failed: ${e}`);
+        await interaction.reply({ content: "There was an error executing this command.", ephemeral: true });
     }
 });
 
 client.login(token);
+
+module.exports = { client };

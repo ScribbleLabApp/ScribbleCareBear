@@ -81,15 +81,14 @@ function loadCommands(dir) {
     return commands;
 }
 
-//const commandsDir = path.join(__dirname, "commands");
-//const commands = loadCommands(commandsDir);
-
 /**
  * Registers commands with the Discord API.
  *
  * @param {string} token - The bot's token.
  * @param {string} applicationID - The application's ID.
  * @param {string} guildID - The guild ID where the commands will be registered.
+ * @returns {Promise<Array>} A promise that resolves with the registered commands.
+ * @throws Will throw an error if there is an issue registering the commands.
  */
 async function registerCommands(token, applicationID, guildID) {
     const commandsDir = path.join(__dirname, "commands");
@@ -98,10 +97,15 @@ async function registerCommands(token, applicationID, guildID) {
     const rest = new REST({ version: "10" }).setToken(token);
 
     try {
+        log("[SCB]: Clearing existing guild commands...");
+        await rest.put(Routes.applicationGuildCommands(applicationID, guildID), { body: [] });
+
+        log("[SCB]: Registering new commands...");
         await rest.put(
             Routes.applicationGuildCommands(applicationID, guildID),
             { body: commands }
         );
+
         log("[SCB]: Successfully registered application commands!");
         return commands;
     } catch (e) {

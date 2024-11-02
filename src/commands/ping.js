@@ -30,7 +30,7 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const { SlashCommandBuilder } = require("discord.js");
-const main = require("../index");
+const { client } = require("../index");
 
 module.exports = {
     data: new SlashCommandBuilder()
