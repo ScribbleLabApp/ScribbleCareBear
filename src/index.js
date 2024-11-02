@@ -49,6 +49,9 @@ client.once(Events.ClientReady, async () => {
     log(`Logged in as ${client.user.tag}`);
     
     try {
+        //await clearGlobalCommands(token, applicationID);
+        //await clearGuildCommands(token, applicationID, guildID);
+
         // Register commands once when ScribbleCareBear becomes ready
         const commands = await registerCommands(token, applicationID, guildID);
         client.commands.clear();        //< Populate the commands map

@@ -97,7 +97,7 @@ async function registerCommands(token, applicationID, guildID) {
     try {
         log("[SCB]: Registering new commands...");
         await rest.put(
-            Routes.applicationGuildCommands(applicationID, guildID),
+            Routes.applicationCommands(applicationID, guildID),
             { body: serializedCommands }
         );
 
@@ -110,4 +110,34 @@ async function registerCommands(token, applicationID, guildID) {
     }
 }
 
-module.exports = { loadCommands, registerCommands };
+async function clearGlobalCommands(token, applicationID) {
+    const rest = new REST({ version: "10" }).setToken(token);
+
+    try {
+        await rest.put(
+            Routes.applicationCommands(applicationID), 
+            { body: [] }
+        );
+
+        log("[SCB]: Successfully cleared global commands!");
+    } catch (e) {
+        log(`[SCB]: Error clearing global commands: ${e}`);
+    }
+}
+
+async function clearGuildCommands(token, applicationID, guildID) {
+    const rest = new REST({ version: "10" }).setToken(token);
+
+    try {
+        await rest.put(
+            Routes.applicationGuildCommands(applicationID, guildID), 
+            { body: [] }
+        );
+
+        log("[SCB]: Successfully cleared guild commands!");
+    } catch (e) {
+        log(`[SCB]: Error clearing guild commands: ${e}`);
+    }
+}
+
+module.exports = { loadCommands, registerCommands, clearGlobalCommands, clearGuildCommands };
