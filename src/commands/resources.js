@@ -33,11 +33,10 @@ const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
-    .setName("resources")
-    .setDescription(
-        "Displays important links like our website, documentation, GitHub projects, and socials"
-    ),
-
+        .setName("resources")
+        .setDescription(
+            "Displays important links like our website, documentation, GitHub projects, and socials"
+        ),
     async execute(interaction) {
         await interaction.reply({
             content: `Hello World!`

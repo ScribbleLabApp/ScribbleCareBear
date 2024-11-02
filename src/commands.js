@@ -31,52 +31,49 @@
 
 const fs = require("fs");
 const path = require("node:path");
-const main = require("./index")
-
-const { log } = require("./utils/log")
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord.js");
+const { log } = require("./utils/log")
 
 /**
  * Loads and retrieves all command data from the specified directory.
  *
  * @param {string} dir - The directory path to search for command files.
- * @returns {Array} An array of command data objects ready for registration.
+ * @returns {Array} An array of command objects ready for use.
  */
 function loadCommands(dir) {
-    function getFiles(directory) {
-        const files = fs.readdirSync(directory, { withFileTypes: true });
-        let commandFiles = [];
 
-        for (const file of files) {
-            if (file.isDirectory()) {
-                commandFiles.push(...getFiles(path.join(directory, file.name)));
-            } else if (file.name.endsWith(".js")) {
-                commandFiles.push(path.join(directory, file.name));
-            }
-        }
+    /*
+    const commandFiles = fs.readdirSync(dir, { withFileTypes: true })
+        .flatMap((file) => file.isDirectory()
+            ? loadCommands(path.join(dir, file.name))
+            : file.name.endsWith(".js") ? [path.join(dir, file.name)] : []);
 
-        return commandFiles;
-    }
-
-    const commandFiles = getFiles(dir);
-    //const commands = commandFiles.map(file => require(file).data.toJSON());
-    const commands = commandFiles.map(file => {
+    const commands = commandFiles.map((file) => {
         const command = require(file);
-
-        if (typeof command.execute !== "function") {
-            log(`The command at ${file} does not have an execute function.`);
-            throw new Error(`The command at ${file} does not have an execute function.`);
+        if (typeof command.execute !== "function" || !command.data) {
+            throw new Error(`The command at ${file} is not structured properly.`);
         }
-        return {
-            name: command.data.name,
-            description: command.data.description,
-            execute: command.execute,
-            data: command.data.toJSON()
-        };
+        return command;
     });
 
-    log(`[SCB]: Loaded commands: ${JSON.stringify(commands)}`);
+    console.log(`[SCB]: Loaded ${commands.length} commands`);
+    return commands;
+    */
+
+    // TODO: Add subdir ability
+
+    const commandFiles = fs.readdirSync(dir).filter(file => file.endsWith(".js"));
+    const commands = [];
+
+    for (const file of commandFiles) {
+        const command = require(path.join(dir, file));
+        if (command.data && command.execute) {
+            commands.push(command);
+        } else {
+            log(`[SCB]: Command file ${file} is missing 'data' or 'execute'.`);
+        }
+    }
 
     return commands;
 }
@@ -86,27 +83,26 @@ function loadCommands(dir) {
  *
  * @param {string} token - The bot's token.
  * @param {string} applicationID - The application's ID.
- * @param {string} guildID - The guild ID where the commands will be registered.
+ * @param {string} guildID - The guild ID for command registration.
  * @returns {Promise<Array>} A promise that resolves with the registered commands.
- * @throws Will throw an error if there is an issue registering the commands.
  */
 async function registerCommands(token, applicationID, guildID) {
     const commandsDir = path.join(__dirname, "commands");
     const commands = loadCommands(commandsDir);
 
+    const serializedCommands = commands.map((cmd) => cmd.data.toJSON());
+
     const rest = new REST({ version: "10" }).setToken(token);
 
     try {
-        log("[SCB]: Clearing existing guild commands...");
-        await rest.put(Routes.applicationGuildCommands(applicationID, guildID), { body: [] });
-
         log("[SCB]: Registering new commands...");
         await rest.put(
             Routes.applicationGuildCommands(applicationID, guildID),
-            { body: commands }
+            { body: serializedCommands }
         );
 
         log("[SCB]: Successfully registered application commands!");
+
         return commands;
     } catch (e) {
         log(`[SCB]: Error registering commands: ${e}`);

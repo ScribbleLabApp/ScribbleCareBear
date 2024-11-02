@@ -30,34 +30,30 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const fs  = require("fs");
+const { Client, Events, GatewayIntentBits } = require("discord.js");
 const { registerCommands } = require("./commands");
 const { log } = require("./utils/log");
-const { 
-    Client, 
-    Events, 
-    GatewayIntentBits, 
-    SlashCommandBuilder, 
-    REST, 
-    Routes 
-} = require("discord.js");
+const config = JSON.parse(
+    fs.readFileSync(__dirname + "/../config.json", "utf8")
+);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-const config = JSON.parse(fs.readFileSync(__dirname + "/../config.json", "utf8"));
-
-const applicationID = config.APPLICATION_ID;
-const publicKey = config.PUBLIC_KEY;
-const token = config.TOKEN;
-const guildID = config.GUILD_ID;
-
 client.commands = new Map();
 
-client.once(Events.ClientReady, async (c) => {
-    log(`Logged in as ${c.user.tag}`);
+const { APPLICATION_ID: applicationID, TOKEN: token, GUILD_ID: guildID } = config;
+
+// Export client and config instance for global access
+module.exports = { client, config };
+
+client.once(Events.ClientReady, async () => {
+    log(`Logged in as ${client.user.tag}`);
     
     try {
+        // Register commands once when ScribbleCareBear becomes ready
         const commands = await registerCommands(token, applicationID, guildID);
-        client.commands.clear();
-        commands.forEach(cmd => client.commands.set(cmd.name, cmd));
+        client.commands.clear();        //< Populate the commands map
+        commands.forEach((cmd) => client.commands.set(cmd.data.name, cmd));
+
         log(`[SCB]: Registered commands: ${Array.from(client.commands.keys()).join(", ")}`);
     } catch (error) {
         log(`[SCB]: Failed to register commands: ${error}`);
@@ -70,19 +66,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const command = client.commands.get(interaction.commandName);
     if (!command) {
         log(`[SCB]: Command not found: ${interaction.commandName}`);
-        await interaction.reply({ content: "Command not found.", ephemeral: true });
+        await interaction.reply({ content: "Command not found", ephemeral: true });
         return;
     }
 
     try {
-        log(`[SCB]: Executing command: ${command.name}`);
+        log(`[SCB]: Executing command: ${command.data.name}`);
         await command.execute(interaction);
     } catch (e) {
         log(`[SCB]: Interaction execution failed: ${e}`);
-        await interaction.reply({ content: "There was an error executing this command.", ephemeral: true });
+        await interaction.reply({ content: "An unexpected error occured while executing this command.\nTry again later. If this issue persists, contact ScribbleLabApp Support.", ephemeral: true });
     }
 });
 
 client.login(token);
-
-module.exports = { client };

@@ -30,17 +30,17 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const { SlashCommandBuilder } = require("discord.js");
-const { client } = require("../index");
 
 module.exports = {
     data: new SlashCommandBuilder()
-    .setName("ping")
-    .setDescription(
-        "Displays the bot's latency and response time"
-    ),
-
+        .setName("ping")
+        .setDescription(
+            "Displays the bot's latency and response time"
+        ),
     async execute(interaction) {
         const latency = Date.now() - interaction.createdTimestamp;
-        await interaction.reply({ content: `Pong! Latency: ${latency}ms. API Latency: ${main.client.ws.ping}ms` });
+        await interaction.reply({ 
+            content: `Pong! Latency: ${latency}ms. API Latency: ${interaction.client.ws.ping}ms` 
+        });
     }
 }

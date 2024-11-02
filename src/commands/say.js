@@ -33,17 +33,16 @@ const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
-    .setName("say")
-    .setDescription(
-        "Sends a message with a provided string"
-    )
-    .addStringOption(option =>
-        option
-            .setName("message")
-            .setDescription("The message to send")
-            .setRequired(true)
-    ),
-
+        .setName("say")
+        .setDescription(
+            "Sends a message with a provided string"
+        )
+        .addStringOption(option =>
+            option
+                .setName("message")
+                .setDescription("The message to send")
+                .setRequired(true)
+        ),
     async execute(interaction) {
         const message = interaction.options.getString("message");
         await interaction.reply({ content: message });
