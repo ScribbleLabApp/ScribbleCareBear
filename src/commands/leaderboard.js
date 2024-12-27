@@ -1,5 +1,5 @@
 //
-//  ping.js
+//  leaderboard.js
 //  ScribbleCareBear Commands
 //
 //  Copyright (c) 2024 ScribbleLabApp LLC. - All rights reserved.
@@ -29,32 +29,78 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const axios = require("axios");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("ping")
-    .setDescription("Displays the bot's latency and response time"),
+    .setName("leaderboard")
+    .setDescription(
+      "We use leaderboards to list the community's most helpful members.",
+    ),
+
   async execute(interaction) {
-    const latency = Date.now() - interaction.createdTimestamp;
+    let leaderboardData = [];
 
-    const embed = new EmbedBuilder()
-      .setColor("#FF7800")
-      .setTitle("ScribbleCareBear Connectivity Check")
-      .setDescription(
-        "Check the bot's connectivity and performance below. The latency and API response times are measured in real-time to ensure smooth operation.",
-      )
-      .setFooter({ text: "ScribbleLabApp - Building Together" })
-      .setTimestamp()
-      .addFields(
-        { name: "Latency", value: `${latency}ms`, inline: true },
-        {
-          name: "API Latency",
-          value: `${interaction.client.ws.ping}ms`,
-          inline: true,
-        },
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/v0/scribblecarebear/leaderboard",
       );
+      leaderboardData = response.data;
+    } catch (error) {
+      console.error("Error fetching leaderboard data from API:", error);
+      return interaction.reply({
+        content: "There was an error fetching the leaderboard data.",
+        ephemeral: true,
+      });
+    }
 
-    await interaction.reply({ embeds: [embed] });
+    if (!Array.isArray(leaderboardData) || leaderboardData.length === 0) {
+      return interaction.reply({
+        content: "No leaderboard data available at the moment.",
+        ephemeral: true,
+      });
+    }
+
+    const top10 = leaderboardData.slice(0, 10);
+
+    const leaderboardEmbed = new EmbedBuilder()
+      .setColor("#FF7800")
+      .setTitle("🌟 Community Leaderboard 🌟")
+      .setDescription(
+        "Here are the most helpful members of our community! Keep it up! 💪",
+      )
+      .setTimestamp()
+      .setFooter({ text: "Leaderboard updated hourly" });
+
+    top10.forEach((member, index) => {
+      const badge =
+        index === 0
+          ? "🥇"
+          : index === 1
+            ? "🥈"
+            : index === 2
+              ? "🥉"
+              : `#${index + 1}`;
+
+      leaderboardEmbed.addFields({
+        name: `${badge}`,
+        value: `**Points**: ${member.coins} - <@${member.discordId}>`,
+        inline: false,
+      });
+    });
+
+    try {
+      await interaction.reply({
+        embeds: [leaderboardEmbed],
+      });
+    } catch (err) {
+      console.error("Error replying to interaction:", err);
+    }
   },
 };
