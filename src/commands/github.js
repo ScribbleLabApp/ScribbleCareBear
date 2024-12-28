@@ -1,5 +1,5 @@
 //
-//  ping.js
+//  github.js
 //  ScribbleCareBear Commands
 //
 //  Copyright (c) 2024 ScribbleLabApp LLC. - All rights reserved.
@@ -29,32 +29,59 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
+const { client, config } = require("../index");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("ping")
-    .setDescription("Displays the bot's latency and response time"),
+    .setName("github")
+    .setDescription("Link or unlink your GitHub account with the bot.")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("link")
+        .setDescription("Link your GitHub account with the bot."),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("unlink")
+        .setDescription("Unlink your GitHub account from the bot."),
+    ),
   async execute(interaction) {
-    const latency = Date.now() - interaction.createdTimestamp;
+    const subcommand = interaction.options.getSubcommand();
 
     const embed = new EmbedBuilder()
       .setColor("#FF7800")
-      .setTitle("ScribbleCareBear Connectivity Check")
+      .setTitle("GitHub Account Link/Unlink")
       .setDescription(
-        "Check the bot's connectivity and performance below. The latency and API response times are measured in real-time to ensure smooth operation.",
+        "Linking your GitHub account to this bot allows you to receive roles based on your contributions to our projects.\n" +
+          "By linking your GitHub account, you will automatically be granted roles based on your contributions to the organization.\n" +
+          "Unlinking your account will remove those roles and reset your contributions.",
       )
-      .setFooter({ text: "ScribbleLabApp - Building Together" })
-      .setTimestamp()
-      .addFields(
-        { name: "Latency", value: `${latency}ms`, inline: true },
-        {
-          name: "API Latency",
-          value: `${interaction.client.ws.ping}ms`,
-          inline: true,
-        },
-      );
+      .setFooter({ text: "ScribbleLabApp GitHub Integration" })
+      .setTimestamp();
 
-    await interaction.reply({ embeds: [embed] });
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel(
+          subcommand === "link"
+            ? "Link GitHub Account"
+            : "Unlink GitHub Account",
+        )
+        .setStyle(ButtonStyle.Link) // Ensure it's a link button
+        .setURL(`https://scribbleapi.onrender.com/v0/github/login`), // GitHub OAuth URL
+    );
+
+    await interaction.reply({
+      content: `Click the button below to ${subcommand === "link" ? "link" : "unlink"} your GitHub account.`,
+      embeds: [embed],
+      components: [row],
+      ephemeral: true,
+    });
   },
 };

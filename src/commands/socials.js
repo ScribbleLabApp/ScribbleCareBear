@@ -1,5 +1,5 @@
 //
-//  ping.js
+//  about.js
 //  ScribbleCareBear Commands
 //
 //  Copyright (c) 2024 ScribbleLabApp LLC. - All rights reserved.
@@ -29,32 +29,59 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("ping")
-    .setDescription("Displays the bot's latency and response time"),
+    .setName("socials")
+    .setDescription("Displays an overview of ScribbleLabApp's social accounts"),
   async execute(interaction) {
-    const latency = Date.now() - interaction.createdTimestamp;
-
     const embed = new EmbedBuilder()
       .setColor("#FF7800")
-      .setTitle("ScribbleCareBear Connectivity Check")
+      .setTitle("ScribbleLabApp Social Accounts")
       .setDescription(
-        "Check the bot's connectivity and performance below. The latency and API response times are measured in real-time to ensure smooth operation.",
-      )
-      .setFooter({ text: "ScribbleLabApp - Building Together" })
-      .setTimestamp()
-      .addFields(
-        { name: "Latency", value: `${latency}ms`, inline: true },
-        {
-          name: "API Latency",
-          value: `${interaction.client.ws.ping}ms`,
-          inline: true,
-        },
+        "We're excited to announce that ScribbleLab is now active on social media! Follow us to stay updated on new features, get helpful tips on maximizing the potential of our app, and enjoy a behind-the-scenes look at our projects. Connect with us, share your feedback, and be part of our growing community!",
       );
 
-    await interaction.reply({ embeds: [embed] });
+    // Creating an ActionRowBuilder instance
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setEmoji("1321249437829435443")
+        .setLabel("YouTube")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://www.youtube.com/@scribblelabappofficial"),
+
+      new ButtonBuilder()
+        .setEmoji("1321249149613506676")
+        .setLabel("Twitter")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://x.com/scribblelabapp"),
+
+      new ButtonBuilder()
+        .setEmoji("1321248310735933541")
+        .setLabel("Instagram")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://www.instagram.com/scribblelabappofficial"),
+
+      new ButtonBuilder()
+        .setEmoji("1321249906408816742")
+        .setLabel("TikTok")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://www.tiktok.com/@scribblelabappofficial"),
+
+      new ButtonBuilder()
+        .setEmoji("1321250194528010252")
+        .setLabel("GitHub")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://github.com/ScribbleLabApp"),
+    );
+
+    await interaction.reply({ embeds: [embed], components: [row] });
   },
 };

@@ -29,18 +29,64 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const { SlashCommandBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 const { client, config } = require("../index");
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("about")
-        .setDescription(
-            "Displays the bot's version, build number, developer information, and uptime"
-        ),
-    async execute(interaction) {
-        await interaction.reply({
-            content: `ScribbleCareBear Version: ${config.version} (Build ${config.build})\nDeveloped by ${config.developer}\nUptime: ${client.uptime}ms\nLicense: BSD-3 Clause\nSource Code: https://github.com/ScribbleLabApp/ScribbleCareBear\nCopyright (c) 2024 ScribbleLabApp - All rights reserved.`
-        });
-    }
-}
+  data: new SlashCommandBuilder()
+    .setName("about")
+    .setDescription(
+      "Displays the bot's version, build number, developer information, and uptime",
+    ),
+  async execute(interaction) {
+    const embed = new EmbedBuilder()
+      .setColor("#FF7800")
+      .setTitle("About ScribbleCareBear")
+      .setDescription(
+        "ScribbleCareBear is your friendly utility bot designed to assist with ScribbleLabApp projects. " +
+          "It offers tools to streamline workflows, access essential resources, and foster collaboration within the community. " +
+          "Learn more about the bot's version, features, and development details below.",
+      )
+      .addFields(
+        { name: "Version", value: config.version, inline: true },
+        { name: "Build", value: config.build, inline: true },
+        { name: "Uptime", value: `${client.uptime}ms`, inline: true },
+        { name: "License", value: `BSD-3 Clause`, inline: true },
+        {
+          name: "Copyright",
+          value: `(c) 2024 - ${new Date().getFullYear()} ScribbleLabApp LLC. - All rights reserved.`,
+          inline: true,
+        },
+        {
+          name: "Developer",
+          value: `ScribbleLabApp LLC. & Nevio Hirani`,
+          inline: true,
+        },
+      )
+      .setFooter({ text: "ScribbleLabApp - Building Together" })
+      .setTimestamp();
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setEmoji("1321250194528010252")
+        .setLabel("Source Code")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://github.com/ScribbleLabApp/ScribbleCareBear"),
+      new ButtonBuilder()
+        .setEmoji("1321250194528010252")
+        .setLabel("Report an Issue")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://github.com/ScribbleLabApp/ScribbleCareBear/issues"),
+    );
+    await interaction.reply({
+      embeds: [embed],
+      components: [row],
+    });
+  },
+};

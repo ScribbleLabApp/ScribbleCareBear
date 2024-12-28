@@ -27,9 +27,10 @@ Before you begin, ensure you have the following:
 1. **Node.js (v20.11.1 or later):** Download and install the latest version from [nodejs.org](https://nodejs.org). Ensure that both `node` and `npm` are correctly installed and accessible via the command line.
 
 2. **Discord Bot Token**
-    - Visit the [Discord Developer Portal](https://discord.com/developers/)
-    - Go to the **Applications** tab, click **New Application**, and name your bot
-    - Under the Bot section, create a bot and copy its token. Keep this token secure! Sharing it publicly can compromise your bot.
+
+   - Visit the [Discord Developer Portal](https://discord.com/developers/)
+   - Go to the **Applications** tab, click **New Application**, and name your bot
+   - Under the Bot section, create a bot and copy its token. Keep this token secure! Sharing it publicly can compromise your bot.
 
 3. **Text Editor/IDE:** Use a reliable text editor like [Visual Studio Code](https://code.visualstudio.com) for editing ScribbleCareBear's code and configuration files.
 
@@ -66,24 +67,24 @@ This command will download and install all dependencies listed in `package.json`
 
 2. **Update Configuration Details:** Open `config.json` in your text editor and fill in the required fields:
 
-    ```json
-    {
-        "APPLICATION_ID": "<APPLICATION_ID>",
-        "TOKEN": "<TOKEN_ID>",
-        "GUILD_ID": "<GUILD_ID>",
-        "version": "0.0.1-development",
-        "build": "0b000001",
-        "developer": "ScribbleLabApp",
-    }
-    ```
+   ```json
+   {
+     "APPLICATION_ID": "<APPLICATION_ID>",
+     "TOKEN": "<TOKEN_ID>",
+     "GUILD_ID": "<GUILD_ID>",
+     "version": "0.0.1-development",
+     "build": "0b000001",
+     "developer": "ScribbleLabApp"
+   }
+   ```
 
-    #### Arguments
+   #### Arguments
 
-    ##### APPLICATION_ID
-    You can find this in your Discord Developer Portal under your bot’s application settings.
+   ##### APPLICATION_ID
 
-> [!CAUTION]
-> **Security Reminder:** Keep `config.json` safe and avoid pushing it to public repositories. Use environment variables or secret management tools if needed. Alternatively you can ignore this file using `.gitignore`.
+   You can find this in your Discord Developer Portal under your bot’s application settings.
+
+> [!CAUTION] > **Security Reminder:** Keep `config.json` safe and avoid pushing it to public repositories. Use environment variables or secret management tools if needed. Alternatively you can ignore this file using `.gitignore`.
 
 ### Step 5: Running the bot
 
@@ -103,7 +104,7 @@ node .
 
 1. Visit the OAuth2 tab in the [Discord Developer Portal](https://discord.com/developers/).
 2. Select the following scopes:
-    - `bot`
-    - `applications.commands`
+   - `bot`
+   - `applications.commands`
 3. Give ScribbleCareBear administrative permissions (needed for role management, etc.)
 4. Generate and copy the invite link, then paste it into your browser to invite your ScribbleCareBear testing instance to your testing server.

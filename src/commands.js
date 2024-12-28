@@ -33,7 +33,7 @@ const fs = require("fs");
 const path = require("node:path");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord.js");
-const { log } = require("./utils/log")
+const { log } = require("./utils/log");
 
 /**
  * Loads and retrieves all command data from the specified directory.
@@ -42,8 +42,7 @@ const { log } = require("./utils/log")
  * @returns {Array} An array of command objects ready for use.
  */
 function loadCommands(dir) {
-
-    /*
+  /*
     const commandFiles = fs.readdirSync(dir, { withFileTypes: true })
         .flatMap((file) => file.isDirectory()
             ? loadCommands(path.join(dir, file.name))
@@ -61,21 +60,23 @@ function loadCommands(dir) {
     return commands;
     */
 
-    // TODO: Add subdir ability
+  // TODO: Add subdir ability
 
-    const commandFiles = fs.readdirSync(dir).filter(file => file.endsWith(".js"));
-    const commands = [];
+  const commandFiles = fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".js"));
+  const commands = [];
 
-    for (const file of commandFiles) {
-        const command = require(path.join(dir, file));
-        if (command.data && command.execute) {
-            commands.push(command);
-        } else {
-            log(`[SCB]: Command file ${file} is missing 'data' or 'execute'.`);
-        }
+  for (const file of commandFiles) {
+    const command = require(path.join(dir, file));
+    if (command.data && command.execute) {
+      commands.push(command);
+    } else {
+      log(`[SCB]: Command file ${file} is missing 'data' or 'execute'.`);
     }
+  }
 
-    return commands;
+  return commands;
 }
 
 /**
@@ -87,27 +88,57 @@ function loadCommands(dir) {
  * @returns {Promise<Array>} A promise that resolves with the registered commands.
  */
 async function registerCommands(token, applicationID, guildID) {
-    const commandsDir = path.join(__dirname, "commands");
-    const commands = loadCommands(commandsDir);
+  const commandsDir = path.join(__dirname, "commands");
+  const commands = loadCommands(commandsDir);
 
-    const serializedCommands = commands.map((cmd) => cmd.data.toJSON());
+  const serializedCommands = commands.map((cmd) => cmd.data.toJSON());
 
-    const rest = new REST({ version: "10" }).setToken(token);
+  const rest = new REST({ version: "10" }).setToken(token);
 
-    try {
-        log("[SCB]: Registering new commands...");
-        await rest.put(
-            Routes.applicationGuildCommands(applicationID, guildID),
-            { body: serializedCommands }
-        );
+  try {
+    log("[SCB]: Registering new commands...");
+    await rest.put(Routes.applicationCommands(applicationID, guildID), {
+      body: serializedCommands,
+    });
 
-        log("[SCB]: Successfully registered application commands!");
+    log("[SCB]: Successfully registered application commands!");
 
-        return commands;
-    } catch (e) {
-        log(`[SCB]: Error registering commands: ${e}`);
-        throw e;
-    }
+    return commands;
+  } catch (e) {
+    log(`[SCB]: Error registering commands: ${e}`);
+    throw e;
+  }
 }
 
-module.exports = { loadCommands, registerCommands };
+async function clearGlobalCommands(token, applicationID) {
+  const rest = new REST({ version: "10" }).setToken(token);
+
+  try {
+    await rest.put(Routes.applicationCommands(applicationID), { body: [] });
+
+    log("[SCB]: Successfully cleared global commands!");
+  } catch (e) {
+    log(`[SCB]: Error clearing global commands: ${e}`);
+  }
+}
+
+async function clearGuildCommands(token, applicationID, guildID) {
+  const rest = new REST({ version: "10" }).setToken(token);
+
+  try {
+    await rest.put(Routes.applicationGuildCommands(applicationID, guildID), {
+      body: [],
+    });
+
+    log("[SCB]: Successfully cleared guild commands!");
+  } catch (e) {
+    log(`[SCB]: Error clearing guild commands: ${e}`);
+  }
+}
+
+module.exports = {
+  loadCommands,
+  registerCommands,
+  clearGlobalCommands,
+  clearGuildCommands,
+};
